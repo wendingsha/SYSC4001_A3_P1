@@ -1,22 +1,26 @@
 /**
  * @file interrupts.cpp
- * @author Sasisekhar Govind
- * @brief template main.cpp file for Assignment 3 Part 1 of SYSC4001
+ * @author wendingsha
+ * @brief main.cpp file for EXternal Priority Scheduler
  * 
  */
 
-#include<interrupts_wendingsha_janbeyati.hpp>
+#include <interrupts_wendingsha_janbeyati.hpp>
+#include <map>
 
-void FCFS(std::vector<PCB> &ready_queue) {
+//External Priority Scheduler
+//smaller PID -> higher priority
+void EP_scheduler(std::vector<PCB> &ready_queue) {
     std::sort( 
                 ready_queue.begin(),
                 ready_queue.end(),
-                []( const PCB &first, const PCB &second ){
-                    return (first.arrival_time > second.arrival_time); 
+                []( const PCB &a, const PCB &b ){
+                    return a.PID < b.PID; 
                 } 
             );
 }
 
+//main simulator
 std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std::vector<PCB> list_processes) {
 
     std::vector<PCB> ready_queue;   //The ready queue of processes
@@ -37,39 +41,119 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
     //make the output table (the header row)
     execution_status = print_exec_header();
 
+    //detect arrival
+    std::sort(list_processes.begin(), list_processes.end(),
+              [](const PCB &a, const PCB &b){
+                  return a.arrival_time < b.arrival_time;
+              });
+
+    size_t next_arrival = 0;
+    
+    //record completion time of I/O
+    std::map<int, unsigned int> io_finish_time;
+
     //Loop while till there are no ready or waiting processes.
     //This is the main reason I have job_list, you don't have to use it.
     while(!all_process_terminated(job_list) || job_list.empty()) {
+        //arrival events
+        while (next_arrival < list_processes.size() && list_processes[next_arrival].arrival_time == current_time){
+            PCB p = list_processes[next_arrival];
 
-        //Inside this loop, there are three things you must do:
-        // 1) Populate the ready queue with processes as they arrive
-        // 2) Manage the wait queue
-        // 3) Schedule processes from the ready queue
+            assign_memory(p);
 
-        //Population of ready queue is given to you as an example.
-        //Go through the list of proceeses
-        for(auto &process : list_processes) {
-            if(process.arrival_time == current_time) {//check if the AT = current time
-                //if so, assign memory and put the process into the ready queue
-                assign_memory(process);
+            execution_status += print_exec_status(current_time,p.PID,NEW,READY);
 
-                process.state = READY;  //Set the process state to READY
-                ready_queue.push_back(process); //Add the process to the ready queue
-                job_list.push_back(process); //Add it to the list of processes
+            p.state = READY;
+            ready_queue.push_back(p);
+            job_list.push_back(p);
 
-                execution_status += print_exec_status(current_time, process.PID, NEW, READY);
+            next_arrival++;
+        }
+
+        //handle IO completion
+        for (auto it = wait_queue.begin(); it != wait_queue.end();){
+            PCB &p = *it;
+            if (io_finish_time[p.PID] == current_time){
+                execution_status += print_exec_status(current_time, p.PID, WAITING, READY);
+
+                p.state = READY;
+                ready_queue.push_back(p);
+
+                sync_queue(job_list, p);
+                it = wait_queue.erase(it);
+            }else{
+                ++it;
             }
         }
 
-        ///////////////////////MANAGE WAIT QUEUE/////////////////////////
-        //This mainly involves keeping track of how long a process must remain in the ready queue
+        //if CPU idle, schedule new process
+        if (running.PID == -1 && !ready_queue.empty()){
+            EP_scheduler(ready_queue);
 
-        /////////////////////////////////////////////////////////////////
+            PCB p = ready_queue.front();
+            ready_queue.erase(ready_queue.begin());
 
-        //////////////////////////SCHEDULER//////////////////////////////
-        FCFS(ready_queue); //example of FCFS is shown here
-        /////////////////////////////////////////////////////////////////
+            execution_status += print_exec_status(current_time,p.PID, READY, RUNNING);
 
+            p.state = RUNNING;
+            p.start_time = current_time;
+
+            running = p;
+            sync_queue(job_list, running);
+        }
+
+        //condition check
+        if(running.PID == -1 && ready_queue.empty() && wait_queue.empty(), next_arrival >= list_processes.size()){
+            break;
+        }
+
+        //CPU execution
+        if(running.PID != -1){
+            PCB p = running;
+
+            unsigned int time_to_io = (p.io_freq == 0 ? p.remaining_time : p.io_freq);
+
+            unsigned int cpu_run = std::min(p.remaining_time, time_to_io);
+
+            unsigned int next_time = current_time + cpu_run;
+
+            current_time = next_time;
+            p.remaining_time -= cpu_run;
+
+            if(p.io_freq > 0){
+                p.io_freq -= cpu_run;
+            }
+
+            //case1: process finished
+            if(p.remaining_time == 0){
+                execution_status += print_exec_status(current_time, p.PID, RUNNING, TERMINATED);
+
+                terminate_process(p, job_list);
+                idle_CPU(running);
+                continue;
+            }
+
+            //case2: io triggered
+            if(p.io_freq == 0 && p.io_duration > 0){
+                execution_status += print_exec_status(current_time, p.PID, RUNNING, WAITING);
+
+                p.state = WAITING;
+                io_finish_time[p.PID] = current_time + p.io_duration;
+
+                wait_queue.push_back(p);
+                sync_queue(job_list, p);
+
+                idle_CPU(running);
+                continue;
+            }
+
+            //contunue running
+            running = p;
+            sync_queue(job_list, running);
+            continue;
+        }
+
+        //
     }
     
     //Close the output table
