@@ -1,0 +1,40 @@
++------------------------------------------------+
+|Time of Transition |PID | Old State | New State |
++------------------------------------------------+
+|                 0 |  8 |       NEW |     READY |
+|                 0 |  8 |     READY |   RUNNING |
+|                 3 |  3 |       NEW |     READY |
+|                 5 |  8 |   RUNNING |   WAITING |
+|                 5 |  3 |     READY |   RUNNING |
+|                 6 |  1 |       NEW |     READY |
+|                 7 |  8 |   WAITING |     READY |
+|                10 |  9 |       NEW |     READY |
+|                17 |  3 |   RUNNING |TERMINATED |
+|                17 |  1 |     READY |   RUNNING |
+|                19 |  1 |   RUNNING |   WAITING |
+|                19 |  8 |     READY |   RUNNING |
+|                22 |  1 |   WAITING |     READY |
+|                24 |  8 |   RUNNING |   WAITING |
+|                24 |  1 |     READY |   RUNNING |
+|                26 |  1 |   RUNNING |   WAITING |
+|                26 |  8 |   WAITING |     READY |
+|                26 |  8 |     READY |   RUNNING |
+|                29 |  1 |   WAITING |     READY |
+|                31 |  8 |   RUNNING |   WAITING |
+|                31 |  1 |     READY |   RUNNING |
+|                33 |  1 |   RUNNING |   WAITING |
+|                33 |  8 |   WAITING |     READY |
+|                33 |  8 |     READY |   RUNNING |
+|                36 |  1 |   WAITING |     READY |
+|                38 |  8 |   RUNNING |   WAITING |
+|                38 |  1 |     READY |   RUNNING |
+|                40 |  1 |   RUNNING |   WAITING |
+|                40 |  8 |   WAITING |     READY |
+|                40 |  8 |     READY |   RUNNING |
+|                43 |  1 |   WAITING |     READY |
+|                45 |  8 |   RUNNING |TERMINATED |
+|                45 |  1 |     READY |   RUNNING |
+|                47 |  1 |   RUNNING |TERMINATED |
+|                47 |  9 |     READY |   RUNNING |
+|                67 |  9 |   RUNNING |TERMINATED |
++------------------------------------------------+
