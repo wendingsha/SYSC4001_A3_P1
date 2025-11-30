@@ -6,11 +6,23 @@
 |                 0 |  4 |     READY |   RUNNING |
 |                 2 |  4 |   RUNNING |   WAITING |
 |                 2 |  3 |     READY |   RUNNING |
-|                 5 |  3 |   RUNNING |   WAITING |
 |                 3 |  4 |   WAITING |     READY |
-|                 3 |  4 |     READY |   RUNNING |
-|                 9 |  4 |   RUNNING |TERMINATED |
+|                 5 |  3 |   RUNNING |   WAITING |
+|                 5 |  4 |     READY |   RUNNING |
 |                 6 |  3 |   WAITING |     READY |
-|                 6 |  3 |     READY |   RUNNING |
-|                13 |  3 |   RUNNING |TERMINATED |
+|                 7 |  4 |   RUNNING |   WAITING |
+|                 7 |  3 |     READY |   RUNNING |
+|                 8 |  4 |   WAITING |     READY |
+|                10 |  3 |   RUNNING |   WAITING |
+|                10 |  4 |     READY |   RUNNING |
+|                11 |  3 |   WAITING |     READY |
+|                12 |  4 |   RUNNING |   WAITING |
+|                12 |  3 |     READY |   RUNNING |
+|                13 |  4 |   WAITING |     READY |
+|                15 |  3 |   RUNNING |   WAITING |
+|                15 |  4 |     READY |   RUNNING |
+|                16 |  3 |   WAITING |     READY |
+|                17 |  4 |   RUNNING |TERMINATED |
+|                17 |  3 |     READY |   RUNNING |
+|                18 |  3 |   RUNNING |TERMINATED |
 +------------------------------------------------+

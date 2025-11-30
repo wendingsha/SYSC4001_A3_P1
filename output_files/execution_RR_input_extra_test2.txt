@@ -3,20 +3,32 @@
 +------------------------------------------------+
 |                 0 | 10 |       NEW |     READY |
 |                 0 | 10 |     READY |   RUNNING |
-|                 5 | 10 |   RUNNING |   WAITING |
 |                 2 | 20 |       NEW |     READY |
-|                 2 | 20 |     READY |   RUNNING |
-|                 6 | 20 |   RUNNING |   WAITING |
 |                 4 |  5 |       NEW |     READY |
-|                 4 |  5 |     READY |   RUNNING |
-|                 7 |  5 |   RUNNING |   WAITING |
+|                 5 | 10 |   RUNNING |   WAITING |
+|                 5 | 20 |     READY |   RUNNING |
 |                 7 | 10 |   WAITING |     READY |
-|                 7 | 20 |   WAITING |     READY |
-|                 7 | 10 |     READY |   RUNNING |
-|                22 | 10 |   RUNNING |TERMINATED |
-|                22 | 20 |     READY |   RUNNING |
-|                30 | 20 |   RUNNING |TERMINATED |
-|                 8 |  5 |   WAITING |     READY |
-|                 8 |  5 |     READY |   RUNNING |
-|                13 |  5 |   RUNNING |TERMINATED |
+|                 9 | 20 |   RUNNING |   WAITING |
+|                 9 |  5 |     READY |   RUNNING |
+|                10 | 20 |   WAITING |     READY |
+|                12 |  5 |   RUNNING |   WAITING |
+|                12 | 10 |     READY |   RUNNING |
+|                13 |  5 |   WAITING |     READY |
+|                17 | 10 |   RUNNING |   WAITING |
+|                17 | 20 |     READY |   RUNNING |
+|                19 | 10 |   WAITING |     READY |
+|                21 | 20 |   RUNNING |   WAITING |
+|                21 |  5 |     READY |   RUNNING |
+|                22 | 20 |   WAITING |     READY |
+|                24 |  5 |   RUNNING |   WAITING |
+|                24 | 10 |     READY |   RUNNING |
+|                25 |  5 |   WAITING |     READY |
+|                29 | 10 |   RUNNING |   WAITING |
+|                29 | 20 |     READY |   RUNNING |
+|                31 | 10 |   WAITING |     READY |
+|                33 | 20 |   RUNNING |TERMINATED |
+|                33 |  5 |     READY |   RUNNING |
+|                35 |  5 |   RUNNING |TERMINATED |
+|                35 | 10 |     READY |   RUNNING |
+|                40 | 10 |   RUNNING |TERMINATED |
 +------------------------------------------------+

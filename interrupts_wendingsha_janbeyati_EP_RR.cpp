@@ -10,20 +10,19 @@
 
 const unsigned int QUANTUM = 100;
 
-int find_highest_priority_process(const std::vector<PCB> &ready_queue) {
-    if(ready_queue.empty()){
-        return -1;
-    }
-
+//find highest priority (smallest PID) in ready_queue
+int find_highest_priority_index(const std::vector<PCB> &ready_queue) {
+    if (ready_queue.empty()) return -1;
     int a = 0;
-    for(int i = 1; i<ready_queue.size(); i++){
-        if(ready_queue[i].PID < ready_queue[a].PID){
-            a=i;
+    for (int i = 1; i < (int)ready_queue.size(); ++i) {
+        if (ready_queue[i].PID < ready_queue[a].PID) {
+            a = i;
         }
     }
     return a;
 }
 
+//main simulator
 std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std::vector<PCB> list_processes) {
 
     std::vector<PCB> ready_queue;   //The ready queue of processes
@@ -44,167 +43,205 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
     //make the output table (the header row)
     execution_status = print_exec_header();
 
-    //detect arrival
+    //Sort input processes by arrival time
     std::sort(list_processes.begin(), list_processes.end(),
               [](const PCB &a, const PCB &b){
                   return a.arrival_time < b.arrival_time;
               });
 
+    const unsigned int INF = (unsigned int)-1;
+
     size_t next_arrival = 0;
+    const size_t total_processes = list_processes.size();
+    size_t terminated_processes = 0;
     
-    //record completion time of I/O
+    //record completion time
     std::map<int, unsigned int> io_finish_time;
 
-    //Loop while till there are no ready or waiting processes.
-    //This is the main reason I have job_list, you don't have to use it.
-    while(!all_process_terminated(job_list) || job_list.empty()) {
-        //arrival events
-        while (next_arrival < list_processes.size() && list_processes[next_arrival].arrival_time == current_time){
+    //store original io_freq for each process
+    std::map<int, unsigned int> io_original_freq;
+    for(const auto &p : list_processes) {
+        io_original_freq[p.PID] = p.io_freq;
+    }
+
+    unsigned int quantum_remaining = 0;
+
+    while (true) {
+
+        //arrival
+        while (next_arrival < list_processes.size() &&
+               list_processes[next_arrival].arrival_time == current_time)
+        {
             PCB p = list_processes[next_arrival];
 
             assign_memory(p);
 
-            execution_status += print_exec_status(current_time,p.PID,NEW,READY);
+            execution_status += print_exec_status(p.arrival_time, p.PID, NEW, READY);
 
             p.state = READY;
             ready_queue.push_back(p);
             job_list.push_back(p);
 
             next_arrival++;
-
-            //preemption with higher priority
-            if(running.PID !=-1 && p.PID < running.PID){
-                execution_status += print_exec_status(current_time, running.PID, RUNNING, READY);
-                
-                running.state = READY;
-                ready_queue.push_back(running);
-                sync_queue(job_list,running);
-                idle_CPU(running);
-            }
         }
 
-        //handle IO completion
-        for (auto it = wait_queue.begin(); it != wait_queue.end();){
-            PCB p = *it;
-            if (io_finish_time[p.PID] == current_time){
+        //handle io completion
+        for (auto it = wait_queue.begin(); it != wait_queue.end();) {
+            PCB &p = *it;
+
+            if (io_finish_time[p.PID] == current_time) {
                 execution_status += print_exec_status(current_time, p.PID, WAITING, READY);
 
                 p.state = READY;
+                p.io_freq = io_original_freq[p.PID];
+
                 ready_queue.push_back(p);
-
                 sync_queue(job_list, p);
-
                 it = wait_queue.erase(it);
-
-                if (running.PID != -1 && p.PID < running.PID){
-                    execution_status += print_exec_status(current_time, running.PID, RUNNING,READY);
-
-                    running.state = READY;
-                    ready_queue.push_back(running);
-                    sync_queue(job_list, running);
-                    idle_CPU(running);
-                }
-            }else{
+            } else {
                 ++it;
             }
         }
 
-        //if CPU idle, schedule new process
-        if (running.PID == -1 && !ready_queue.empty()){
+        //priority preemption
+        if (running.PID != -1 && !ready_queue.empty()) {
+            int best_idx = find_highest_priority_index(ready_queue);
+            if (best_idx != -1 && ready_queue[best_idx].PID < running.PID) {
 
-            int index = find_highest_priority_process(ready_queue);
+                execution_status += print_exec_status(current_time, running.PID, RUNNING, READY);
 
-            PCB p = ready_queue[index];
-            ready_queue.erase(ready_queue.begin() + index);
+                running.state = READY;
+                ready_queue.push_back(running);
+                sync_queue(job_list, running);
 
-            execution_status += print_exec_status(current_time,p.PID, READY, RUNNING);
+                idle_CPU(running);
+                quantum_remaining = 0;
+            }
+        }
+
+        //schedule if CPU idle 
+        if (running.PID == -1 && !ready_queue.empty()) {
+            int best_idx = find_highest_priority_index(ready_queue);
+
+            PCB p = ready_queue[best_idx];
+            ready_queue.erase(ready_queue.begin() + best_idx);
+
+            execution_status += print_exec_status(current_time, p.PID, READY, RUNNING);
 
             p.state = RUNNING;
-            p.start_time = current_time;
+            if (p.start_time == -1) {
+                p.start_time = current_time;
+            }
 
             running = p;
             sync_queue(job_list, running);
+            quantum_remaining = QUANTUM;
         }
 
-        //condition check
-        if(running.PID == -1 && ready_queue.empty() && wait_queue.empty() && next_arrival >= list_processes.size()){
+        //termination check
+        if (terminated_processes == total_processes) {
+            break;
+        }
+
+        //compute next events
+        unsigned int next_arrival_time = INF;
+        if (next_arrival < list_processes.size()) {
+            next_arrival_time = list_processes[next_arrival].arrival_time;
+        }
+
+        unsigned int next_io_time = INF;
+        for (auto &p : wait_queue) {
+            unsigned int t = io_finish_time[p.PID];
+            if (t < next_io_time) {
+                next_io_time = t;
+            }
+        }
+
+        unsigned int next_cpu_time = INF;
+        if (running.PID != -1) {
+            unsigned int cpu_delta = running.remaining_time;
+            if (running.io_freq > 0 && running.io_freq < cpu_delta) {
+                cpu_delta = running.io_freq;
+            }
+            if (quantum_remaining < cpu_delta) {
+                cpu_delta = quantum_remaining;
+            }
+            next_cpu_time = current_time + cpu_delta;
+        }
+
+        unsigned int next_time = std::min({next_arrival_time, next_io_time, next_cpu_time});
+        if (next_time == INF) {
             break;
         }
 
         //CPU execution
-        if(running.PID != -1){
-            PCB p = running;
+        unsigned int delta = next_time - current_time;
+        if (running.PID != -1 && delta > 0) {
 
-            unsigned int time_to_io = (p.io_freq == 0 ? p.remaining_time : p.io_freq);
-
-            unsigned int cpu_run = std::min({p.remaining_time, time_to_io, QUANTUM});
-
-            unsigned int next_time = current_time + cpu_run;
-
-            current_time = next_time;
-
-            p.remaining_time -= cpu_run;
-
-            if(p.io_freq > 0){
-                p.io_freq -= cpu_run;
+            if (delta > running.remaining_time) {
+                delta = running.remaining_time;
             }
 
-            //case1: process finished
-            if(p.remaining_time == 0){
-                execution_status += print_exec_status(current_time, p.PID, RUNNING, TERMINATED);
+            running.remaining_time -= delta;
+            if (quantum_remaining > 0) {
+                if (delta >= quantum_remaining) quantum_remaining = 0;
+                else quantum_remaining -= delta;
+            }
 
-                terminate_process(p, job_list);
+            if (running.io_freq > 0) {
+                if (delta >= running.io_freq) {
+                    running.io_freq = 0;
+                } else {
+                    running.io_freq -= delta;
+                }
+            }
+
+            sync_queue(job_list, running);
+        }
+
+        current_time = next_time;
+
+        //CPU boundary events
+        if (running.PID != -1) {
+
+            //case1: process finished
+            if (running.remaining_time == 0) {
+                execution_status += print_exec_status(current_time, running.PID, RUNNING, TERMINATED);
+
+                terminate_process(running, job_list);
+                terminated_processes++;
                 idle_CPU(running);
                 continue;
             }
 
             //case2: io triggered
-            if(p.io_freq == 0 && p.io_duration > 0){
-                execution_status += print_exec_status(current_time, p.PID, RUNNING, WAITING);
+            if (running.io_freq == 0 && running.io_duration > 0) {
+                execution_status += print_exec_status(current_time, running.PID, RUNNING, WAITING);
 
-                p.state = WAITING;
-                io_finish_time[p.PID] = current_time + p.io_duration;
+                running.state = WAITING;
+                io_finish_time[running.PID] = current_time + running.io_duration;
 
-                wait_queue.push_back(p);
-                sync_queue(job_list, p);
-
+                wait_queue.push_back(running);
+                sync_queue(job_list, running);
                 idle_CPU(running);
                 continue;
             }
 
-            //RR
-            if(cpu_run == QUANTUM){
-                execution_status += print_exec_status(current_time, p.PID,RUNNING,READY);
+            //case3: quantum expired
+            if (quantum_remaining == 0) {
+                execution_status += print_exec_status(current_time, running.PID, RUNNING, READY);
 
-                p.state = READY;
-                ready_queue.push_back(p);
-
-                sync_queue(job_list, p);
+                running.state = READY;
+                ready_queue.push_back(running);
+                sync_queue(job_list, running);
                 idle_CPU(running);
                 continue;
             }
-
-            //contunue running
-            running = p;
-            sync_queue(job_list, running);
-            continue;
         }
 
-        //CPU is idle
-        unsigned int next_event = (unsigned int) - 1;
-
-        if(next_arrival < list_processes.size()){
-            next_event = list_processes[next_arrival].arrival_time;
+        if (terminated_processes == total_processes) {
+            break;
         }
-
-        for(auto &p: wait_queue){
-            unsigned int t = io_finish_time[p.PID];
-            if(next_event == (unsigned int) -1 || t< next_event){
-                next_event = t;
-            }
-        }
-
-        current_time = next_event;
     }
     
     //Close the output table

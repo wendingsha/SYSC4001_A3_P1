@@ -3,5 +3,11 @@
 +------------------------------------------------+
 |                 0 |  3 |       NEW |     READY |
 |                 0 |  3 |     READY |   RUNNING |
+|                 5 |  1 |       NEW |     READY |
+|                10 |  2 |       NEW |     READY |
 |                15 |  3 |   RUNNING |TERMINATED |
+|                15 |  1 |     READY |   RUNNING |
+|                25 |  1 |   RUNNING |TERMINATED |
+|                25 |  2 |     READY |   RUNNING |
+|                33 |  2 |   RUNNING |TERMINATED |
 +------------------------------------------------+

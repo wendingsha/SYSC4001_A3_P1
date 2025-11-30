@@ -7,4 +7,10 @@
 |                 7 | 10 |   WAITING |     READY |
 |                 7 | 10 |     READY |   RUNNING |
 |                12 | 10 |   RUNNING |TERMINATED |
+|                20 |  5 |       NEW |     READY |
+|                20 |  5 |     READY |   RUNNING |
+|                30 |  5 |   RUNNING |TERMINATED |
+|                40 |  1 |       NEW |     READY |
+|                40 |  1 |     READY |   RUNNING |
+|                45 |  1 |   RUNNING |TERMINATED |
 +------------------------------------------------+

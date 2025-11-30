@@ -3,20 +3,29 @@
 +------------------------------------------------+
 |                 0 | 10 |       NEW |     READY |
 |                 0 | 10 |     READY |   RUNNING |
-|                 3 | 10 |   RUNNING |   WAITING |
 |                 2 |  2 |       NEW |     READY |
-|                 2 |  2 |     READY |   RUNNING |
-|                 7 |  2 |   RUNNING |   WAITING |
+|                 3 | 10 |   RUNNING |   WAITING |
 |                 3 |  1 |       NEW |     READY |
-|                 3 |  1 |     READY |   RUNNING |
-|                 5 |  1 |   RUNNING |   WAITING |
-|                11 |  1 |   WAITING |     READY |
-|                11 |  1 |     READY |   RUNNING |
-|                15 |  1 |   RUNNING |TERMINATED |
-|                15 |  2 |   WAITING |     READY |
-|                15 |  2 |     READY |   RUNNING |
-|                20 |  2 |   RUNNING |TERMINATED |
+|                 3 |  2 |     READY |   RUNNING |
+|                 8 |  2 |   RUNNING |   WAITING |
+|                 8 |  1 |     READY |   RUNNING |
+|                10 |  1 |   RUNNING |   WAITING |
 |                13 | 10 |   WAITING |     READY |
 |                13 | 10 |     READY |   RUNNING |
-|                22 | 10 |   RUNNING |TERMINATED |
+|                16 | 10 |   RUNNING |   WAITING |
+|                16 |  2 |   WAITING |     READY |
+|                16 |  1 |   WAITING |     READY |
+|                16 |  2 |     READY |   RUNNING |
+|                21 |  2 |   RUNNING |TERMINATED |
+|                21 |  1 |     READY |   RUNNING |
+|                23 |  1 |   RUNNING |   WAITING |
+|                26 | 10 |   WAITING |     READY |
+|                26 | 10 |     READY |   RUNNING |
+|                29 | 10 |   RUNNING |   WAITING |
+|                29 |  1 |   WAITING |     READY |
+|                29 |  1 |     READY |   RUNNING |
+|                31 |  1 |   RUNNING |TERMINATED |
+|                39 | 10 |   WAITING |     READY |
+|                39 | 10 |     READY |   RUNNING |
+|                42 | 10 |   RUNNING |TERMINATED |
 +------------------------------------------------+

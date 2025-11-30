@@ -8,8 +8,6 @@
 #include "interrupts_wendingsha_janbeyati.hpp"
 #include <map>
 
-//External Priority Scheduler
-//smaller PID -> higher priority
 void EP_scheduler(std::vector<PCB> &ready_queue) {
     std::sort( 
                 ready_queue.begin(),
@@ -53,10 +51,10 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
     const size_t total_processes = list_processes.size();
     size_t terminated_processes = 0;
     
-    //record completion time of I/O
+    //record completion time
     std::map<int, unsigned int> io_finish_time;
 
-    //store original io_freq for each process (for multiple I/O bursts)
+    //store original io_freq for each process
     std::map<int, unsigned int> io_original_freq;
     for(const auto &p : list_processes) {
         io_original_freq[p.PID] = p.io_freq;
@@ -64,7 +62,7 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
 
     while (true) {
 
-        //arrivals
+        //arrival
         while (next_arrival < list_processes.size() &&
                list_processes[next_arrival].arrival_time == current_time)
         {

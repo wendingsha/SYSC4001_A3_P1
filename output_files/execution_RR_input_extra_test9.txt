@@ -6,5 +6,29 @@
 |                 2 |  5 |   RUNNING |   WAITING |
 |                 7 |  5 |   WAITING |     READY |
 |                 7 |  5 |     READY |   RUNNING |
-|                25 |  5 |   RUNNING |TERMINATED |
+|                 9 |  5 |   RUNNING |   WAITING |
+|                14 |  5 |   WAITING |     READY |
+|                14 |  5 |     READY |   RUNNING |
+|                16 |  5 |   RUNNING |   WAITING |
+|                21 |  5 |   WAITING |     READY |
+|                21 |  5 |     READY |   RUNNING |
+|                23 |  5 |   RUNNING |   WAITING |
+|                28 |  5 |   WAITING |     READY |
+|                28 |  5 |     READY |   RUNNING |
+|                30 |  5 |   RUNNING |   WAITING |
+|                35 |  5 |   WAITING |     READY |
+|                35 |  5 |     READY |   RUNNING |
+|                37 |  5 |   RUNNING |   WAITING |
+|                42 |  5 |   WAITING |     READY |
+|                42 |  5 |     READY |   RUNNING |
+|                44 |  5 |   RUNNING |   WAITING |
+|                49 |  5 |   WAITING |     READY |
+|                49 |  5 |     READY |   RUNNING |
+|                51 |  5 |   RUNNING |   WAITING |
+|                56 |  5 |   WAITING |     READY |
+|                56 |  5 |     READY |   RUNNING |
+|                58 |  5 |   RUNNING |   WAITING |
+|                63 |  5 |   WAITING |     READY |
+|                63 |  5 |     READY |   RUNNING |
+|                65 |  5 |   RUNNING |TERMINATED |
 +------------------------------------------------+

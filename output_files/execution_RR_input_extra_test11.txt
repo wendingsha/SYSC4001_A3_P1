@@ -3,17 +3,26 @@
 +------------------------------------------------+
 |                 0 | 10 |       NEW |     READY |
 |                 0 | 10 |     READY |   RUNNING |
-|                 4 | 10 |   RUNNING |   WAITING |
 |                 3 |  1 |       NEW |     READY |
-|                 3 |  1 |     READY |   RUNNING |
-|                11 |  1 |   RUNNING |TERMINATED |
+|                 4 | 10 |   RUNNING |   WAITING |
+|                 4 |  1 |     READY |   RUNNING |
 |                 5 |  5 |       NEW |     READY |
-|                 5 |  5 |     READY |   RUNNING |
-|                11 |  5 |   RUNNING |   WAITING |
 |                 6 | 10 |   WAITING |     READY |
-|                 6 | 10 |     READY |   RUNNING |
-|                22 | 10 |   RUNNING |TERMINATED |
-|                14 |  5 |   WAITING |     READY |
-|                14 |  5 |     READY |   RUNNING |
-|                20 |  5 |   RUNNING |TERMINATED |
+|                12 |  1 |   RUNNING |TERMINATED |
+|                12 |  5 |     READY |   RUNNING |
+|                18 |  5 |   RUNNING |   WAITING |
+|                18 | 10 |     READY |   RUNNING |
+|                21 |  5 |   WAITING |     READY |
+|                22 | 10 |   RUNNING |   WAITING |
+|                22 |  5 |     READY |   RUNNING |
+|                24 | 10 |   WAITING |     READY |
+|                28 |  5 |   RUNNING |TERMINATED |
+|                28 | 10 |     READY |   RUNNING |
+|                32 | 10 |   RUNNING |   WAITING |
+|                34 | 10 |   WAITING |     READY |
+|                34 | 10 |     READY |   RUNNING |
+|                38 | 10 |   RUNNING |   WAITING |
+|                40 | 10 |   WAITING |     READY |
+|                40 | 10 |     READY |   RUNNING |
+|                44 | 10 |   RUNNING |TERMINATED |
 +------------------------------------------------+

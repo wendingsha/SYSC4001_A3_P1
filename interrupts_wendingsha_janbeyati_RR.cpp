@@ -10,57 +10,49 @@
 
 const unsigned int QUANTUM = 100;
 
-void RR_scheduler(std::vector<PCB> &ready_queue) {
-    // std::sort( 
-    //             ready_queue.begin(),
-    //             ready_queue.end(),
-    //             []( const PCB &first, const PCB &second ){
-    //                 return (first.arrival_time > second.arrival_time); 
-    //             } 
-    //         );
-}
-
+//main simulator
 std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std::vector<PCB> list_processes) {
 
-    std::vector<PCB> ready_queue;   //The ready queue of processes
-    std::vector<PCB> wait_queue;    //The wait queue of processes
-    std::vector<PCB> job_list;      //A list to keep track of all the processes. This is similar
-                                    //to the "Process, Arrival time, Burst time" table that you
-                                    //see in questions. You don't need to use it, I put it here
-                                    //to make the code easier :).
+    std::vector<PCB> ready_queue;  
+    std::vector<PCB> wait_queue;   
+    std::vector<PCB> job_list;     
 
     unsigned int current_time = 0;
     PCB running;
-
-    //Initialize an empty running process
     idle_CPU(running);
 
     std::string execution_status;
-
-    //make the output table (the header row)
     execution_status = print_exec_header();
 
-    //detect arrival
     std::sort(list_processes.begin(), list_processes.end(),
               [](const PCB &a, const PCB &b){
                   return a.arrival_time < b.arrival_time;
               });
 
+    const unsigned int INF = (unsigned int)-1;
+
     size_t next_arrival = 0;
-    
-    //record completion time of I/O
+    const size_t total_processes = list_processes.size();
+    size_t terminated_processes = 0;
+
     std::map<int, unsigned int> io_finish_time;
+    std::map<int, unsigned int> io_original_freq;
 
-    //Loop while till there are no ready or waiting processes.
-    //This is the main reason I have job_list, you don't have to use it.
-    while(!all_process_terminated(job_list) || job_list.empty()) {
-        //arrival events
-        while (next_arrival < list_processes.size() && list_processes[next_arrival].arrival_time == current_time){
+    for(const auto &p : list_processes) {
+        io_original_freq[p.PID] = p.io_freq;
+    }
+
+    unsigned int quantum_remaining = 0;
+
+    while (true) {
+
+        //arrival
+        while (next_arrival < list_processes.size() &&
+               list_processes[next_arrival].arrival_time == current_time)
+        {
             PCB p = list_processes[next_arrival];
-
             assign_memory(p);
-
-            execution_status += print_exec_status(current_time,p.PID,NEW,READY);
+            execution_status += print_exec_status(p.arrival_time, p.PID, NEW, READY);
 
             p.state = READY;
             ready_queue.push_back(p);
@@ -69,160 +61,147 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
             next_arrival++;
         }
 
-        //handle IO completion
-        for (auto it = wait_queue.begin(); it != wait_queue.end();){
+        //handle io completion
+        for (auto it = wait_queue.begin(); it != wait_queue.end();) {
             PCB &p = *it;
-            if (io_finish_time[p.PID] == current_time){
+            if (io_finish_time[p.PID] == current_time) {
+
                 execution_status += print_exec_status(current_time, p.PID, WAITING, READY);
 
                 p.state = READY;
+                p.io_freq = io_original_freq[p.PID];
+
                 ready_queue.push_back(p);
-
                 sync_queue(job_list, p);
-
                 it = wait_queue.erase(it);
-            }else{
-                ++it;
-            }
+
+            } else ++it;
         }
 
-        //if CPU idle, schedule new process
-        if (running.PID == -1 && !ready_queue.empty()){
+        //schedule if CPU idle
+        if (running.PID == -1 && !ready_queue.empty()) {
 
             PCB p = ready_queue.front();
             ready_queue.erase(ready_queue.begin());
 
-            execution_status += print_exec_status(current_time,p.PID, READY, RUNNING);
+            execution_status += print_exec_status(current_time, p.PID, READY, RUNNING);
 
             p.state = RUNNING;
-            p.start_time = current_time;
+            if (p.start_time == -1) p.start_time = current_time;
 
             running = p;
             sync_queue(job_list, running);
+            quantum_remaining = QUANTUM;
         }
 
-        //condition check
-        if(running.PID == -1 && ready_queue.empty() && wait_queue.empty() && next_arrival >= list_processes.size()){
-            break;
+        if (terminated_processes == total_processes) break;
+
+        //next events
+        unsigned int next_arrival_t = INF;
+        if (next_arrival < list_processes.size())
+            next_arrival_t = list_processes[next_arrival].arrival_time;
+
+        unsigned int next_io_t = INF;
+        for (auto &p : wait_queue)
+            next_io_t = std::min(next_io_t, io_finish_time[p.PID]);
+
+        unsigned int next_cpu_t = INF;
+        if (running.PID != -1) {
+            unsigned int cpu_delta = running.remaining_time;
+            if (running.io_freq > 0 && running.io_freq < cpu_delta)
+                cpu_delta = running.io_freq;
+            if (quantum_remaining < cpu_delta)
+                cpu_delta = quantum_remaining;
+            next_cpu_t = current_time + cpu_delta;
         }
+
+        unsigned int next_time = std::min({next_arrival_t, next_io_t, next_cpu_t});
+
+        if (next_time == INF) break;
+
+        unsigned int delta = next_time - current_time;
+
+        if (running.PID != -1) {
+            unsigned int use = delta;
+            running.remaining_time -= use;
+            quantum_remaining -= use;
+
+            if (running.io_freq > 0) {
+                if (use >= running.io_freq) running.io_freq = 0;
+                else running.io_freq -= use;
+            }
+            sync_queue(job_list, running);
+        }
+
+        current_time = next_time;
 
         //CPU execution
-        if(running.PID != -1){
-            PCB p = running;
+        if (running.PID != -1) {
 
-            unsigned int time_to_io = (p.io_freq == 0 ? p.remaining_time : p.io_freq);
-
-            unsigned int cpu_run = std::min({p.remaining_time, time_to_io, QUANTUM});
-
-            unsigned int next_time = current_time + cpu_run;
-
-            current_time = next_time;
-
-            p.remaining_time -= cpu_run;
-
-            if(p.io_freq > 0){
-                p.io_freq -= cpu_run;
-            }
-
-            //case1: process finished
-            if(p.remaining_time == 0){
-                execution_status += print_exec_status(current_time, p.PID, RUNNING, TERMINATED);
-
-                terminate_process(p, job_list);
+            //finish
+            if (running.remaining_time == 0) {
+                execution_status += print_exec_status(current_time, running.PID, RUNNING, TERMINATED);
+                terminate_process(running, job_list);
+                terminated_processes++;
                 idle_CPU(running);
                 continue;
             }
 
-            //case2: io triggered
-            if(p.io_freq == 0 && p.io_duration > 0){
-                execution_status += print_exec_status(current_time, p.PID, RUNNING, WAITING);
+            //I/O
+            if (running.io_freq == 0 && running.io_duration > 0) {
+                execution_status += print_exec_status(current_time, running.PID, RUNNING, WAITING);
 
-                p.state = WAITING;
-                io_finish_time[p.PID] = current_time + p.io_duration;
+                running.state = WAITING;
+                io_finish_time[running.PID] = current_time + running.io_duration;
 
-                wait_queue.push_back(p);
-                sync_queue(job_list, p);
-
+                wait_queue.push_back(running);
+                sync_queue(job_list, running);
                 idle_CPU(running);
                 continue;
             }
 
-            if(cpu_run == QUANTUM){
-                execution_status += print_exec_status(current_time, p.PID,RUNNING,READY);
+            //Quantum expire
+            if (quantum_remaining == 0) {
 
-                p.state = READY;
-                ready_queue.push_back(p);
+                execution_status += print_exec_status(current_time, running.PID, RUNNING, READY);
 
-                sync_queue(job_list, p);
+                running.state = READY;
+                ready_queue.push_back(running);
+                sync_queue(job_list, running);
                 idle_CPU(running);
                 continue;
             }
-
-            //contunue running
-            running = p;
-            sync_queue(job_list, running);
-            continue;
         }
-
-        //CPU is idle
-        unsigned int next_event = (unsigned int) - 1;
-
-        if(next_arrival < list_processes.size()){
-            next_event = list_processes[next_arrival].arrival_time;
-        }
-
-        for(auto &p: wait_queue){
-            unsigned int t = io_finish_time[p.PID];
-            if(next_event == (unsigned int) -1 || t< next_event){
-                next_event = t;
-            }
-        }
-
-        current_time = next_event;
     }
-    
-    //Close the output table
-    execution_status += print_exec_footer();
 
+    execution_status += print_exec_footer();
     return std::make_tuple(execution_status);
 }
 
-
 int main(int argc, char** argv) {
 
-    //Get the input file from the user
     if(argc != 2) {
         std::cout << "ERROR!\nExpected 1 argument, received " << argc - 1 << std::endl;
         std::cout << "To run the program, do: ./interrutps <your_input_file.txt>" << std::endl;
         return -1;
     }
 
-    //Open the input file
     auto file_name = argv[1];
-    std::ifstream input_file;
-    input_file.open(file_name);
+    std::ifstream input_file(file_name);
 
-    //Ensure that the file actually opens
     if (!input_file.is_open()) {
         std::cerr << "Error: Unable to open file: " << file_name << std::endl;
         return -1;
     }
 
-    //Parse the entire input file and populate a vector of PCBs.
-    //To do so, the add_process() helper function is used (see include file).
     std::string line;
     std::vector<PCB> list_process;
     while(std::getline(input_file, line)) {
         auto input_tokens = split_delim(line, ", ");
-        auto new_process = add_process(input_tokens);
-        list_process.push_back(new_process);
+        list_process.push_back(add_process(input_tokens));
     }
-    input_file.close();
 
-    //With the list of processes, run the simulation
     auto [exec] = run_simulation(list_process);
-
     write_output(exec, "execution.txt");
-
     return 0;
 }

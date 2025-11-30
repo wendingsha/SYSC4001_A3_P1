@@ -3,5 +3,23 @@
 +------------------------------------------------+
 |                 0 |  3 |       NEW |     READY |
 |                 0 |  3 |     READY |   RUNNING |
+|                 1 |  4 |       NEW |     READY |
+|                 2 |  2 |       NEW |     READY |
+|                 3 |  1 |       NEW |     READY |
 |                 4 |  3 |   RUNNING |TERMINATED |
+|                 4 |  4 |     READY |   RUNNING |
+|                 6 |  4 |   RUNNING |   WAITING |
+|                 6 |  2 |     READY |   RUNNING |
+|                 7 |  4 |   WAITING |     READY |
+|                 9 |  2 |   RUNNING |   WAITING |
+|                 9 |  1 |     READY |   RUNNING |
+|                10 |  2 |   WAITING |     READY |
+|                17 |  1 |   RUNNING |TERMINATED |
+|                17 |  4 |     READY |   RUNNING |
+|                19 |  4 |   RUNNING |   WAITING |
+|                19 |  2 |     READY |   RUNNING |
+|                20 |  4 |   WAITING |     READY |
+|                21 |  2 |   RUNNING |TERMINATED |
+|                21 |  4 |     READY |   RUNNING |
+|                23 |  4 |   RUNNING |TERMINATED |
 +------------------------------------------------+
