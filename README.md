@@ -1,8 +1,8 @@
-#SYSC 4001 Assignment3 Part1
+# SYSC 4001 Assignment3 Part1
 
-##Build & Run Instructions
+## Build & Run Instructions
 
-###Compile and run all tests
+### Compile and run all tests
 
 chmod +x build.sh
 
