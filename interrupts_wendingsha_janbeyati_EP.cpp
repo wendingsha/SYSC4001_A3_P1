@@ -153,7 +153,21 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
             continue;
         }
 
-        //
+        //CPU is idle
+        unsigned int next_event = (unsigned int) - 1;
+
+        if(next_arrival < list_processes.size()){
+            next_event = list_processes[next_arrival].arrival_time;
+        }
+
+        for(auto &p: wait_queue){
+            unsigned int t = io_finish_time[p.PID];
+            if(next_event == (unsigned int) -1 || t< next_event){
+                next_event = t;
+            }
+        }
+
+        current_time = next_event;
     }
     
     //Close the output table
