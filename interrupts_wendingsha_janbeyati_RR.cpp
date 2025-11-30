@@ -102,7 +102,7 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
         }
 
         //condition check
-        if(running.PID == -1 && ready_queue.empty() && wait_queue.empty(), next_arrival >= list_processes.size()){
+        if(running.PID == -1 && ready_queue.empty() && wait_queue.empty() && next_arrival >= list_processes.size()){
             break;
         }
 
